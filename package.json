@@ -1,0 +1,25 @@
+{
+  "name": "boolshop-be",
+  "version": "1.0.0",
+  "description": "back end boolshop",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jonathanmasa/boolshop-BE.git"
+  },
+  "keywords": [
+    "boolshop-be"
+  ],
+  "author": "jonathan masa, luca belardinelli, valentino bellini, federico atzeni, tommaso merola",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Jonathanmasa/boolshop-BE/issues"
+  },
+  "homepage": "https://github.com/Jonathanmasa/boolshop-BE#readme",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
