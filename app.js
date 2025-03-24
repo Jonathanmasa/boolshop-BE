@@ -7,6 +7,7 @@ const cors = require('cors');
 
 // importa router products
 const productsRouter = require('./routers/products');
+const ordersRouter = require('./routers/orders');
 
 // importa middlewares
 const notFound = require('./middlewares/errorHandler');
@@ -27,11 +28,12 @@ app.use(express.urlencoded({ extended: true }));
 
 // Altre rotte
 app.use('/api/products', productsRouter);
-
+app.use('/api/orders', ordersRouter);
 
 app.get('/api', (req, res) => {
     res.send("Ciao sono la rotta Home");
 });
+
 
 app.use(handleErrors);
 app.use(notFound);
