@@ -29,6 +29,9 @@ app.use(imagePath);
 // definisci l'uso di una cartella per i file statici
 app.use(express.static('public'));
 
+// definisci l'uso del body-parser express per stripe webhook
+app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
+
 // definisci l'uso del body-parser express per "application/JSON"
 app.use(express.json());
 
