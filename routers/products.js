@@ -12,7 +12,7 @@ router.get('/', productsController.index);
 
 
 // show
-router.get('/:id', productsController.show);
+router.get('/:category/:id', productsController.show);
 
 
 

@@ -50,7 +50,7 @@ function show(req, res) {
         // Determina quale tabella interrogare in base alla categoria
         let detailQuery = '';
         switch (category) {
-            case 'cards':
+            case 'card':
                 detailQuery = 'SELECT * FROM card_details WHERE product_id = ?';
                 break;
             case 'figures':
