@@ -1,58 +1,45 @@
-// importa il modulo express
-const express = require('express')
-// crea l'istanza dell'applicazione express
-const app = express()
-// definisci la porta da utilizzare
-const port = process.env.PORT
+require('dotenv').config();
 
-// importa cors
+const express = require('express');
+const app = express();
+const port = process.env.PORT;
+
 const cors = require('cors');
-
-// importiamo il router
+const stripeRouter = require('./routers/stripe');
 const productsRouter = require('./routers/products');
-
-//importa middleware notFound
-const notFound = require('./middlewares/errorHandler')
-//importa middleware handleErrors
-const handleErrors = require('./middlewares/errorHandler')
-// importiamo il middleware di gestione path imgs
+const notFound = require('./middlewares/errorHandler');
+const handleErrors = require('./middlewares/errorHandler');
 const imagePath = require('./middlewares/imagePath');
 
-//usa cors
+// ⚠️ AGGIUNGI QUESTO:
+const { handleStripeWebhook } = require('./controllers/stripeWebHookController');
+
 app.use(cors({ origin: process.env.FE_APP }));
-
-
-// registro il middleware di path imgs
 app.use(imagePath);
-
-
-// definisci l'uso di una cartella per i file statici
 app.use(express.static('public'));
 
-// definisci l'uso del body-parser express per stripe webhook
-app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
+// ✅ CORRETTO: webhook con raw + handler diretto
+app.post(
+    '/api/stripe/webhook',
+    express.raw({ type: 'application/json' }),
+    handleStripeWebhook
+);
 
-// definisci l'uso del body-parser express per "application/JSON"
+// Parser normale
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
+// Altre rotte
+app.use('/api/products', productsRouter);
+app.use('/api/stripe', stripeRouter);
 
-// definiamo la rotta home
 app.get('/api', (req, res) => {
     res.send("Ciao sono la rotta Home");
-})
+});
 
-
-// utilizziamo la rotta dei products andando a definire la parte iniziale delle rotte
-app.use("/api/products", productsRouter)
-
-
-// utilizza middleware handleErrors
 app.use(handleErrors);
-// utilizza middlewares notFOund
 app.use(notFound);
 
-
-// avvia il server e mettilo in ascolto sulla porta selezionata
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
-})
+    console.log(`Server attivo sulla porta ${port}`);
+});

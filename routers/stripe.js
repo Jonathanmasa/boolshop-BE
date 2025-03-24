@@ -1,12 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const stripeController = require('../controllers/stripeController');
+const stripeWebhookController = require('../controllers/stripeWebHookController');
 
+// POST per creare la sessione di pagamento
 router.post('/create-checkout-session', stripeController.createCheckoutSession);
-
-// POST per ricevere il webhook (raw body!)
-router.post('/webhook', express.raw({ type: 'application/json' }), stripeWebhookController.handleStripeWebhook);
-
-
 
 module.exports = router;

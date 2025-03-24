@@ -2,7 +2,22 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 // createCheckoutSession
 function createCheckoutSession(req, res) {
-    const { cart, tax_id_code, note } = req.body;
+    // const { cart, tax_id_code, note } = req.body;
+
+
+    // ✅ Carrello temporaneo simulato
+    const cart = [
+        { product_id: 1, name: 'Charizard Holo', price: 24.99, quantity: 2 },
+        { product_id: 4, name: 'One Piece Vol.1', price: 9.99, quantity: 1 }
+    ];
+
+    const tax_id_code = 'RSSMRA90A01F205X';
+    const note = 'Test ordine da backend (senza frontend)';
+
+
+
+
+
 
     if (!cart || cart.length === 0) {
         return res.status(400).json({ error: 'Cart is empty' });

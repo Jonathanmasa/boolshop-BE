@@ -36,6 +36,14 @@ function handleStripeWebhook(req, res) {
         };
 
 
+
+        console.log("📩 Webhook ricevuto:", event.type);
+        console.log("🧾 Metadata:", session.metadata);
+        console.log("👤 Utente:", session.customer_details);
+
+
+
+
         const orderQuery = `
             INSERT INTO orders 
             (user_name, user_email, user_address, user_phone, price, city, postal_code, country, status, tax_id_code)
@@ -89,5 +97,7 @@ function handleStripeWebhook(req, res) {
         res.status(200).end(); // altri eventi, ignorali
     }
 }
+
+
 
 module.exports = { handleStripeWebhook };
