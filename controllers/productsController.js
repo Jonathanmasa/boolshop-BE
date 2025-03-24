@@ -16,15 +16,15 @@ function index(req, res) {
         }
 
         // mappa i risultati e aggiungi il percorso dell'immagine
-        // const movies = result.map(movie => {
-        //     return {
-        //         ...movie,
-        //         image: req.imagePath + movie.image
-        //     }
-        // })
+        const products = result.map(product => {
+            return {
+                ...product,
+                image: req.imagePath + product.image
+            }
+        })
 
-        // restituisci il movie in formato json
-        res.json(result);
+        // restituisci il product in formato json
+        res.json(products);
     });
 }
 

@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
-// // importiamo il middleware di gestione img
-// const upload = require('../middlewares/multer');
+//  importiamo il middleware di gestione img
+const upload = require('../middlewares/multer');
 
 const productsController = require('../controllers/productsController');
 
