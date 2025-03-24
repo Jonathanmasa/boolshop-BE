@@ -5,6 +5,18 @@ const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 // webhook
 function handleStripeWebhook(req, res) {
+
+    console.log("Headers:", req.headers);
+    console.log("Content-Type:", req.headers['content-type']);
+    console.log("Raw Body:", req.rawBody);
+
+
+    if (req.rawBody) {
+        console.log("Raw Body String:", req.rawBody.toString());
+    } else {
+        console.log("Raw body is undefined or null");
+    }
+
     const sig = req.headers['stripe-signature'];
 
     let event;
