@@ -1,5 +1,7 @@
 const connection = require('../data/db'); // Importa la connessione al database
 
+
+// funzione per inviare email di conferma ordine
 function sendConfirmationEmail(toEmail, orderId, items, total) {
     const transporter = nodemailer.createTransport({
         service: 'gmail',
@@ -34,6 +36,8 @@ function sendConfirmationEmail(toEmail, orderId, items, total) {
     });
 }
 
+
+// funzione per creare un ordine sul db
 function createOrder(req, res) {
 
     // Dati simulati come se venissero dal frontend
