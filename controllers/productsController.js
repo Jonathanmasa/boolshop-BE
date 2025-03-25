@@ -1,4 +1,5 @@
 const connection = require('../data/db');// Importa la connessione al database
+const { get } = require('../routers/products');
 
 // definiamo le logiche
 
@@ -55,6 +56,92 @@ function getByCategory(req, res) {
 
 
 
+// funzione per ottenere i prodotti in sconto
+function getOnSaleProducts(req, res) {
+    const sql = `
+      SELECT products.*, discount.amount
+      FROM products
+      JOIN discount ON products.id = discount.product_id
+      WHERE discount.date_start <= CURDATE()
+      AND discount.date_end >= CURDATE()
+    `;
+
+    connection.query(sql, (err, result) => {
+        if (err) {
+            console.error('Errore query sconti:', err);
+            return res.status(500).json({ error: 'Errore database' });
+        }
+
+        const products = result.map(p => ({
+            ...p,
+            discounted_price: p.price - (p.price * p.amount / 100),
+            image: req.imagePath + p.image
+        }));
+
+        res.json(products);
+    });
+}
+
+
+
+// funzione per ottenere i nuovi arrivi
+function getNewArrivals(req, res) {
+    const sql = `
+    SELECT * 
+    FROM products 
+    WHERE release_date >= DATE_SUB(CURDATE(), INTERVAL 10 DAY)
+  `;
+
+    connection.query(sql, (err, result) => {
+        if (err) {
+            console.error('Errore query nuovi prodotti:', err);
+            return res.status(500).json({ error: 'Errore database' });
+        }
+
+        const products = result.map(p => ({
+            ...p,
+            image: req.imagePath + p.image
+        }));
+
+        res.json(products);
+    });
+}
+
+
+
+// funzione per la ricerca da searchbar
+function search(req, res) {
+    const searchTerm = req.query.query;
+
+    if (!searchTerm || searchTerm.trim() === '') {
+        return res.status(400).json({ error: 'Nessun termine di ricerca fornito' });
+    }
+
+    // Query: cerca per nome o descrizione
+    const sql = `
+        SELECT * FROM products
+        WHERE name LIKE ?
+    `;
+
+    const likeTerm = `%${searchTerm}%`;
+
+    connection.query(sql, [likeTerm], (err, results) => {
+        if (err) {
+            console.error('Errore durante la ricerca:', err);
+            return res.status(500).json({ error: 'Errore nella ricerca' });
+        }
+
+        // Aggiungi il percorso immagine se serve
+        const products = results.map(product => ({
+            ...product,
+            image: req.imagePath + product.image
+        }));
+
+        res.json(products);
+    });
+}
+
+
 
 // funzione per ottenere un singolo prodotto con dettagli specifici
 function show(req, res) {
@@ -104,45 +191,8 @@ function show(req, res) {
 }
 
 
-
-
-// funzione per la ricerca da searchbar
-function search(req, res) {
-    const searchTerm = req.query.query;
-
-    if (!searchTerm || searchTerm.trim() === '') {
-        return res.status(400).json({ error: 'Nessun termine di ricerca fornito' });
-    }
-
-    // Query: cerca per nome o descrizione
-    const sql = `
-        SELECT * FROM products
-        WHERE name LIKE ?
-    `;
-
-    const likeTerm = `%${searchTerm}%`;
-
-    connection.query(sql, [likeTerm], (err, results) => {
-        if (err) {
-            console.error('Errore durante la ricerca:', err);
-            return res.status(500).json({ error: 'Errore nella ricerca' });
-        }
-
-        // Aggiungi il percorso immagine se serve
-        const products = results.map(product => ({
-            ...product,
-            image: req.imagePath + product.image
-        }));
-
-        res.json(products);
-    });
-}
-
-
-
-
 // esporta le funzioni 
-module.exports = { index, show, search, getByCategory };
+module.exports = { index, show, search, getByCategory, getOnSaleProducts, getNewArrivals };
 
 
 
