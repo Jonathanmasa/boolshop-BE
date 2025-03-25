@@ -29,7 +29,7 @@ function index(req, res) {
 }
 
 
-// Funzione per ottenere un singolo prodotto con dettagli specifici
+// funzione per ottenere un singolo prodotto con dettagli specifici
 function show(req, res) {
     const { id, category } = req.params;// Estrae id e categoria dai parametri della richiesta
 
@@ -76,8 +76,41 @@ function show(req, res) {
     });
 }
 
+// funzione per la ricerca da searchbar
+function search(req, res) {
+    const searchTerm = req.query.query;
+
+    if (!searchTerm || searchTerm.trim() === '') {
+        return res.status(400).json({ error: 'Nessun termine di ricerca fornito' });
+    }
+
+    // Query: cerca per nome o descrizione
+    const sql = `
+        SELECT * FROM products
+        WHERE name LIKE ?
+    `;
+
+    const likeTerm = `%${searchTerm}%`;
+
+    connection.query(sql, [likeTerm], (err, results) => {
+        if (err) {
+            console.error('Errore durante la ricerca:', err);
+            return res.status(500).json({ error: 'Errore nella ricerca' });
+        }
+
+        // Aggiungi il percorso immagine se serve
+        const products = results.map(product => ({
+            ...product,
+            image: req.imagePath + product.image
+        }));
+
+        res.json(products);
+    });
+}
+
+
 // esporta le funzioni 
-module.exports = { index, show, };
+module.exports = { index, show, search };
 
 
 

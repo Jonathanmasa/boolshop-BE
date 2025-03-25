@@ -16,6 +16,8 @@ router.get('/', productsController.index);
 router.get('/:category/:id', productsController.show);
 
 
+// search
+router.get('/search', productsController.search);
 
 
 // esportiamo il modulo del router
