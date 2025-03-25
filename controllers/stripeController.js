@@ -57,19 +57,53 @@ async function createCheckoutSession(req, res) {
         { product_id: 5, quantity: 1, name: "Dragon Ball Set", price: 1500 }
     ];
 
+
+
+    // Calcolo totale prodotti
+    const subtotal = items.reduce(
+        (acc, item) => acc + item.price * item.quantity,
+        0
+    );
+
+    // Calcola spese spedizione: 10€ sotto 50€, gratuita sopra
+    const shippingCost = subtotal >= 5000 ? 0 : 1000;
+
+    // Line items dei prodotti
+    const line_items = items.map(item => ({
+        price_data: {
+            currency: 'eur',
+            product_data: {
+                name: item.name,
+            },
+            unit_amount: item.price
+        },
+        quantity: item.quantity
+    }));
+
+    // 📦 Line item per le spese di spedizione (se presenti)
+    if (shippingCost > 0) {
+        line_items.push({
+            price_data: {
+                currency: 'eur',
+                product_data: {
+                    name: 'Spese di spedizione'
+                },
+                unit_amount: shippingCost
+            },
+            quantity: 1
+        });
+    }
+
+    // 🔁 Crea sessione
     const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         mode: 'payment',
-        line_items: items.map(item => ({
-            price_data: {
-                currency: 'eur',
-                product_data: { name: item.name },
-                unit_amount: item.price
-            },
-            quantity: item.quantity
-        })),
-        success_url: 'http://localhost:3000/success',
-        cancel_url: 'http://localhost:3000/cancel',
+        line_items,
+        success_url: `${process.env.FE_APP}/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.FE_APP}/cart`,
+        shipping_address_collection: {
+            allowed_countries: ['IT', 'FR', 'DE', 'ES'],
+        },
         metadata: {
             user_name: user.name,
             user_surname: user.surname,
@@ -80,11 +114,12 @@ async function createCheckoutSession(req, res) {
             city: user.city,
             country: user.country,
             tax_id_code: user.tax_id_code,
-            items: JSON.stringify(items.map(({ product_id, quantity }) => ({ product_id, quantity })))
+            shipping_cost: shippingCost.toString(),
+            items: JSON.stringify(items.map(({ product_id, quantity, price }) => ({ product_id, quantity, price })))
         }
     });
 
     res.json({ url: session.url });
 }
 
-module.exports = { handleStripeWebhook, createCheckoutSession };
+module.exports = { createCheckoutSession, handleStripeWebhook };
