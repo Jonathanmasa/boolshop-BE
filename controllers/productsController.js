@@ -1,5 +1,6 @@
 const connection = require('../data/db');// Importa la connessione al database
-const { get } = require('../routers/products');
+
+
 
 // definiamo le logiche
 

@@ -19,6 +19,8 @@ router.get('/category/:category', productsController.getByCategory);
 // show
 router.get('/:category/:id', productsController.show);
 
+
+
 // show active discounted
 router.get('/on-sale', productsController.getOnSaleProducts);
 
