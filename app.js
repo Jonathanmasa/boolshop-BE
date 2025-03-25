@@ -8,6 +8,7 @@ const cors = require('cors');
 // importa router products
 const productsRouter = require('./routers/products');
 const ordersRouter = require('./routers/orders');
+const stripeRouter = require('./routers/stripe');
 
 // importa middlewares
 const notFound = require('./middlewares/errorHandler');
@@ -20,7 +21,8 @@ app.use(cors({ origin: process.env.FE_APP }));
 app.use(imagePath);
 app.use(express.static('public'));
 
-
+// Stripe
+app.use('/api/stripe', stripeRouter);
 
 // Parser normale
 app.use(express.json());
@@ -34,6 +36,11 @@ app.get('/api', (req, res) => {
     res.send("Ciao sono la rotta Home");
 });
 
+
+// rotta test stripe
+app.get('/success', (req, res) => {
+    res.send('<h1>Pagamento completato con successo!</h1>');
+});
 
 app.use(handleErrors);
 app.use(notFound);
