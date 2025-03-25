@@ -19,7 +19,7 @@ function index(req, res) {
         const products = result.map(product => {
             return {
                 ...product,
-                image: req.imagePath + product.image // Aggiunge il percorso immagine
+                image_url: req.imagePath + product.image_url // Aggiunge il percorso immagine
             }
         })
 
