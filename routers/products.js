@@ -12,8 +12,13 @@ const productsController = require('../controllers/productsController');
 router.get('/', productsController.index);
 
 
+// show by category
+router.get('/category/:category', productsController.getByCategory);
+
+
 // show
 router.get('/:category/:id', productsController.show);
+
 
 
 // search

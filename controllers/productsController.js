@@ -29,6 +29,33 @@ function index(req, res) {
 }
 
 
+
+// funzione per ottenere i prodotti per categoria
+// prodotti per categoria
+function getByCategory(req, res) {
+    const { category } = req.params;
+
+    const sql = 'SELECT * FROM products WHERE category = ?';
+
+    connection.query(sql, [category], (err, result) => {
+        if (err) {
+            console.error('Errore nella query:', err);
+            return res.status(500).json({ error: 'Errore nella query' });
+        }
+
+        const products = result.map(product => ({
+            ...product,
+            image: req.imagePath + product.image
+        }));
+
+        res.json(products);
+    });
+}
+
+
+
+
+
 // funzione per ottenere un singolo prodotto con dettagli specifici
 function show(req, res) {
     const { id, category } = req.params;// Estrae id e categoria dai parametri della richiesta
@@ -76,6 +103,9 @@ function show(req, res) {
     });
 }
 
+
+
+
 // funzione per la ricerca da searchbar
 function search(req, res) {
     const searchTerm = req.query.query;
@@ -109,8 +139,10 @@ function search(req, res) {
 }
 
 
+
+
 // esporta le funzioni 
-module.exports = { index, show, search };
+module.exports = { index, show, search, getByCategory };
 
 
 
