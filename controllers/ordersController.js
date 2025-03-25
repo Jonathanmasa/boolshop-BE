@@ -167,6 +167,7 @@ async function createOrderFromStripe(session) {
     };
 
     const items = JSON.parse(session.metadata.items);
+    const shippingCost = Number(session.metadata.shipping_cost) / 100;
 
     const productIds = items.map(item => item.product_id);
     const placeholders = productIds.map(() => '?').join(',');
@@ -180,15 +181,17 @@ async function createOrderFromStripe(session) {
             priceMap[product.id] = parseFloat(product.price);
         });
 
-        const total = items.reduce((sum, item) => {
+        const subtotal = items.reduce((sum, item) => {
             const price = priceMap[item.product_id];
             return sum + (price * item.quantity);
         }, 0);
 
+        const total = subtotal + shippingCost;
+
         const orderQuery = `
             INSERT INTO orders 
-            (user_name, user_surname, user_email, user_address, user_phone, price, postal_code, city, country, tax_id_code, status) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (user_name, user_surname, user_email, user_address, user_phone, price, shipping_cost, postal_code, city, country, tax_id_code, status) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         const orderValues = [
@@ -197,7 +200,8 @@ async function createOrderFromStripe(session) {
             user.email,
             user.address,
             user.phone,
-            total,
+            subtotal,
+            shippingCost,
             user.postal_code,
             user.city,
             user.country,

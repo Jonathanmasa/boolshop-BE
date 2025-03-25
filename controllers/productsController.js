@@ -110,29 +110,84 @@ function getNewArrivals(req, res) {
 
 
 
-// funzione per la ricerca da searchbar
+// funzione per la ricerca da searchbar (semplice)
+// function search(req, res) {
+//     const searchTerm = req.query.query;
+
+//     if (!searchTerm || searchTerm.trim() === '') {
+//         return res.status(400).json({ error: 'Nessun termine di ricerca fornito' });
+//     }
+
+//     // Query: cerca per nome o descrizione
+//     const sql = `
+//         SELECT * FROM products
+//         WHERE name LIKE ?
+//     `;
+
+//     const likeTerm = `%${searchTerm}%`;
+
+//     connection.query(sql, [likeTerm], (err, results) => {
+//         if (err) {
+//             console.error('Errore durante la ricerca:', err);
+//             return res.status(500).json({ error: 'Errore nella ricerca' });
+//         }
+
+//         // Aggiungi il percorso immagine se serve
+//         const products = results.map(product => ({
+//             ...product,
+//             image: req.imagePath + product.image
+//         }));
+
+//         res.json(products);
+//     });
+// }
+
+
+
+
+
+// funzione per la ricerca avanzata
 function search(req, res) {
-    const searchTerm = req.query.query;
+    // Log dei parametri della richiesta
+    console.log('Parametri della richiesta:', req.query);  // Questo mostrerà tutti i parametri ricevuti
 
-    if (!searchTerm || searchTerm.trim() === '') {
-        return res.status(400).json({ error: 'Nessun termine di ricerca fornito' });
-    }
-
-    // Query: cerca per nome o descrizione
-    const sql = `
-        SELECT * FROM products
-        WHERE name LIKE ?
-    `;
+    const searchTerm = req.query.query || '';  // Ottieni il termine di ricerca
+    const sortOption = req.query.sort || 'name_asc';  // Imposta l'ordinamento di default
 
     const likeTerm = `%${searchTerm}%`;
 
-    connection.query(sql, [likeTerm], (err, results) => {
+    // Log per verificare il parametro di ordinamento
+    console.log('Parametro di ordinamento:', sortOption);  // Questo ti dirà quale valore è stato passato per il parametro "sort"
+
+    // Mappa le opzioni di ordinamento
+    const sortMap = {
+        'price_asc': 'price ASC',
+        'price_desc': 'price DESC',
+        'name_asc': 'name ASC',
+        'name_desc': 'name DESC',
+        'date_asc': 'release_date ASC',
+        'date_desc': 'release_date DESC'
+    };
+
+    // Ottieni l'ordinamento corretto
+    const orderBy = sortMap[sortOption] || 'name ASC';  // Se 'sort' non è valido, usa 'name_asc'
+
+    // Log della query con l'ordinamento applicato
+    console.log(`Esecuzione query con ordinamento: ${orderBy}`);  // Questo mostrerà l'ordinamento che verrà applicato
+
+    // Query SQL completa
+    const sql = `
+        SELECT * FROM products
+        WHERE name LIKE ? OR category LIKE ? OR brand LIKE ?
+        ORDER BY ${orderBy}
+    `;
+
+    connection.query(sql, [likeTerm, likeTerm, likeTerm], (err, results) => {
         if (err) {
             console.error('Errore durante la ricerca:', err);
             return res.status(500).json({ error: 'Errore nella ricerca' });
         }
 
-        // Aggiungi il percorso immagine se serve
         const products = results.map(product => ({
             ...product,
             image: req.imagePath + product.image
@@ -141,6 +196,8 @@ function search(req, res) {
         res.json(products);
     });
 }
+
+
 
 
 

@@ -68,6 +68,14 @@ async function createCheckoutSession(req, res) {
     // Calcola spese spedizione: 10€ sotto 50€, gratuita sopra
     const shippingCost = subtotal >= 5000 ? 0 : 1000;
 
+
+    console.log("💸 Subtotal:", subtotal); // in euro
+    console.log("🚚 Spese di spedizione (euro):", shippingCost);
+    console.log("🚚 Spese di spedizione (centesimi per Stripe):", shippingCost);
+
+
+
+
     // Line items dei prodotti
     const line_items = items.map(item => ({
         price_data: {
@@ -94,6 +102,10 @@ async function createCheckoutSession(req, res) {
         });
     }
 
+
+
+
+
     // 🔁 Crea sessione
     const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
@@ -115,7 +127,11 @@ async function createCheckoutSession(req, res) {
             country: user.country,
             tax_id_code: user.tax_id_code,
             shipping_cost: shippingCost.toString(),
-            items: JSON.stringify(items.map(({ product_id, quantity, price }) => ({ product_id, quantity, price })))
+            items: JSON.stringify(items.map(({ product_id, quantity, price }) => ({
+                product_id,
+                quantity,
+                price: price / 100
+            })))
         }
     });
 
