@@ -38,8 +38,102 @@ function sendConfirmationEmail(toEmail, orderId, items, total) {
 }
 
 
+// funzione per creare un ordine nel db senza Stripe
+async function createOrder(req, res) {
+    // Simula i dati che normalmente arriverebbero dal frontend
+    const user = {
+        name: "Luca",
+        surname: "Telese",
+        email: "ducciok@gmail.com",
+        address: "Via Roma 123",
+        phone: "1234567890",
+        postal_code: "90100",
+        city: "Palermo",
+        country: "Italia",
+        tax_id_code: "MRARSS80A01H501X"
+    };
 
-// funzione per creare un ordine sul db a partire da una sessione Stripe
+    // Simula i prodotti nel carrello (prezzi in centesimi)
+    const items = [
+        { product_id: 7, quantity: 1, name: "Naruto Card Pack", price: 2000 },
+        { product_id: 5, quantity: 1, name: "Dragon Ball Set", price: 1500 }
+    ];
+
+    // Calcola il subtotal degli articoli nel carrello
+    const subtotal = items.reduce((sum, item) => {
+        const itemTotal = Number(item.price) * Number(item.quantity);  // Assicurati che i valori siano numerici
+        return sum + itemTotal;
+    }, 0);
+
+    // Calcola le spese di spedizione (simulato)
+    const shippingCost = subtotal >= 5000 ? 0 : 1000;  // 10€ sotto 50€, gratuita sopra
+
+    const total = subtotal + shippingCost;
+
+    // Esegui l'inserimento dell'ordine nel database
+    const orderQuery = `
+        INSERT INTO orders 
+        (user_name, user_surname, user_email, user_address, user_phone, price, shipping_cost, postal_code, city, country, tax_id_code, status) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const orderValues = [
+        user.name,
+        user.surname,
+        user.email,
+        user.address,
+        user.phone,
+        subtotal,
+        shippingCost,
+        user.postal_code,
+        user.city,
+        user.country,
+        user.tax_id_code,
+        'unpaid'  // Stato dell'ordine "pending"
+    ];
+
+    // Salva l'ordine
+    connection.query(orderQuery, orderValues, (err, result) => {
+        if (err) {
+            console.error('❌ Errore salvataggio ordine:', err.sqlMessage || err);
+            return res.status(500).json({ message: 'Errore nel salvataggio dell\'ordine' });
+        }
+
+        const orderId = result.insertId;
+
+        // Salva gli articoli nell'ordine
+        const itemsValues = items.map(item => [
+            orderId,
+            item.product_id || item.id,  // fallback se `product_id` non esiste
+            item.quantity
+        ]);
+
+        const itemsQuery = `
+            INSERT INTO products_order (order_id, products_id, quantity)
+            VALUES ?
+        `;
+
+        connection.query(itemsQuery, [itemsValues], (err) => {
+            if (err) {
+                console.error('❌ Errore inserimento prodotti:', err.sqlMessage || err);
+                return res.status(500).json({ message: 'Errore nel salvataggio degli articoli dell\'ordine' });
+            }
+
+            // Invia la conferma dell'ordine via email
+            sendConfirmationEmail(user.email, orderId, items, total);
+            console.log(`✅ Ordine #${orderId} salvato con successo.`);
+
+            // Rispondi con un messaggio di successo
+            res.status(201).json({
+                message: `Ordine #${orderId} creato con successo.`,
+                orderId
+            });
+        });
+    });
+}
+
+
+// funzione per creare un ordine nel db a partire da una sessione Stripe
 async function createOrderFromStripe(session) {
     const user = {
         name: session.metadata.user_name,
@@ -126,6 +220,6 @@ async function createOrderFromStripe(session) {
 }
 
 module.exports = {
-    // createOrder, 
+    createOrder,
     createOrderFromStripe
 };
