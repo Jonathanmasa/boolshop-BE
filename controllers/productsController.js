@@ -72,9 +72,9 @@ function getOnSaleProducts(req, res) {
             return res.status(500).json({ error: 'Errore database' });
         }
 
-        const products = result.map(p => ({
-            ...p,
-            discounted_price: p.price - (p.price * p.amount / 100),
+        const products = result.map(product => ({
+            ...product,
+            discounted_price: product.price - (product.price * product.amount / 100),
             image_url: req.imagePath + product.image_url // Aggiunge il percorso immagine
         }));
 
@@ -98,8 +98,8 @@ function getNewArrivals(req, res) {
             return res.status(500).json({ error: 'Errore database' });
         }
 
-        const products = result.map(p => ({
-            ...p,
+        const products = result.map(product => ({
+            ...product,
             image_url: req.imagePath + product.image_url // Aggiunge il percorso immagine
         }));
 
