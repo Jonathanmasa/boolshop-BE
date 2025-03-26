@@ -4,7 +4,7 @@ const connection = require('../data/db');// Importa la connessione al database
 
 // definiamo le logiche
 
-// index
+// index (mostra tutti i prodotti dalla tabella products)
 function index(req, res) {
 
     const sql = 'SELECT * FROM products';// Query per ottenere tutti i prodotti
@@ -32,7 +32,7 @@ function index(req, res) {
 
 
 
-// funzione per ottenere i prodotti per categoria
+// show by category (mostra i prodotti per categoria dalla tabella products)
 function getByCategory(req, res) {
     const { category } = req.params;
 
@@ -62,7 +62,7 @@ function getByCategory(req, res) {
 
 
 
-// funzione per ottenere i prodotti in sconto
+// show active on sale products (mostra i prodotti in saldo dalla tabella products facendo join di products e discount e usando il valore di amount)
 function getOnSaleProducts(req, res) {
     const sql = `
       SELECT products.*, discount.amount
@@ -90,7 +90,7 @@ function getOnSaleProducts(req, res) {
 
 
 
-// funzione per ottenere i nuovi arrivi
+// show new arrivals products (mostra i nuovi arrivi dalla tabella products usando il valore di release_date)
 function getNewArrivals(req, res) {
     const sql = `
     SELECT * 
@@ -115,7 +115,7 @@ function getNewArrivals(req, res) {
 
 
 
-// funzione per la ricerca avanzata
+// search products (mostra i prodotti dalla tabella products in base alla query di ricerca per nome, categoria, brand)
 function search(req, res) {
     // Log dei parametri della richiesta
     console.log('Parametri della richiesta:', req.query);  // Questo mostrerà tutti i parametri ricevuti
@@ -170,7 +170,7 @@ function search(req, res) {
 
 
 
-// funzione per ottenere un singolo prodotto con dettagli specifici
+// show by category AND id di un singolo prodotto (mostra i prodotti per categoria e id unendo i dati della tabella products e products_details)
 function show(req, res) {
     const { id, category } = req.params;// Estrae id e categoria dai parametri della richiesta
 

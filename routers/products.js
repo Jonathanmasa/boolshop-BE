@@ -8,32 +8,31 @@ const upload = require('../middlewares/multer');
 const productsController = require('../controllers/productsController');
 
 
-// index
+// index (mostra tutti i prodotti dalla tabella products)
 router.get('/', productsController.index);
 
 
-// show by category
+// show by category (mostra i prodotti per categoria dalla tabella products)
 router.get('/category/:category', productsController.getByCategory);
 
 
-// show
+// show by category AND id di un singolo prodotto (mostra i prodotti per categoria e id unendo i dati della tabella products e products_details)
 router.get('/:category/:id', productsController.show);
 
 
 
 
 
-// show active discounted
+// show active on sale products (mostra i prodotti in saldo dalla tabella products facendo join di products e discount e usando il valore di amount)
 router.get('/on-sale', productsController.getOnSaleProducts);
 
 
-// show new arrivals
+// show new arrivals products (mostra i nuovi arrivi dalla tabella products usando il valore di release_date)
 router.get('/new-arrivals', productsController.getNewArrivals);
 
 
 
-
-// search
+// search products (mostra i prodotti dalla tabella products in base alla query di ricerca per nome, categoria, brand)
 router.get('/search', productsController.search);
 
 
