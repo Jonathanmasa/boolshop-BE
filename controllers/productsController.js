@@ -36,6 +36,12 @@ function index(req, res) {
 function getByCategory(req, res) {
     const { category } = req.params;
 
+    // ✅ Verifica che la categoria sia una di quelle ammesse
+    const validCategories = ['card', 'manga', 'figure'];
+    if (!validCategories.includes(category)) {
+        return res.status(400).json({ error: 'Categoria non valida' });
+    }
+
     const sql = 'SELECT * FROM products WHERE category = ?';
 
     connection.query(sql, [category], (err, result) => {
@@ -46,7 +52,7 @@ function getByCategory(req, res) {
 
         const products = result.map(product => ({
             ...product,
-            image_url: req.imagePath + product.image_url // Aggiunge il percorso immagine
+            image_url: req.imagePath + product.image_url
         }));
 
         res.json(products);
