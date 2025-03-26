@@ -101,7 +101,7 @@ function getNewArrivals(req, res) {
 
         const products = result.map(p => ({
             ...p,
-            image: req.imagePath + p.image
+            image_url: req.imagePath + p.image_url
         }));
 
         res.json(products);
@@ -190,7 +190,7 @@ function search(req, res) {
 
         const products = results.map(product => ({
             ...product,
-            image: req.imagePath + product.image
+            image_url: req.imagePath + product.image_url
         }));
 
         res.json(products);
