@@ -47,7 +47,7 @@ function getByCategory(req, res) {
 
         const products = result.map(product => ({
             ...product,
-            image_url: req.imagePath + p.image_url
+            image_url: req.imagePath + product.image_url
         }));
 
         res.json(products);
