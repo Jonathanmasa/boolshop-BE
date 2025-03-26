@@ -46,7 +46,7 @@ function getByCategory(req, res) {
 
         const products = result.map(product => ({
             ...product,
-            image: req.imagePath + product.image
+            image_url: req.imagePath + product.image_url // Aggiunge il percorso immagine
         }));
 
         res.json(products);
@@ -75,7 +75,7 @@ function getOnSaleProducts(req, res) {
         const products = result.map(p => ({
             ...p,
             discounted_price: p.price - (p.price * p.amount / 100),
-            image: req.imagePath + p.image
+            image_url: req.imagePath + product.image_url // Aggiunge il percorso immagine
         }));
 
         res.json(products);
@@ -100,48 +100,12 @@ function getNewArrivals(req, res) {
 
         const products = result.map(p => ({
             ...p,
-            image: req.imagePath + p.image
+            image_url: req.imagePath + product.image_url // Aggiunge il percorso immagine
         }));
 
         res.json(products);
     });
 }
-
-
-
-// funzione per la ricerca da searchbar (semplice)
-// function search(req, res) {
-//     const searchTerm = req.query.query;
-
-//     if (!searchTerm || searchTerm.trim() === '') {
-//         return res.status(400).json({ error: 'Nessun termine di ricerca fornito' });
-//     }
-
-//     // Query: cerca per nome o descrizione
-//     const sql = `
-//         SELECT * FROM products
-//         WHERE name LIKE ?
-//     `;
-
-//     const likeTerm = `%${searchTerm}%`;
-
-//     connection.query(sql, [likeTerm], (err, results) => {
-//         if (err) {
-//             console.error('Errore durante la ricerca:', err);
-//             return res.status(500).json({ error: 'Errore nella ricerca' });
-//         }
-
-//         // Aggiungi il percorso immagine se serve
-//         const products = results.map(product => ({
-//             ...product,
-//             image: req.imagePath + product.image
-//         }));
-
-//         res.json(products);
-//     });
-// }
-
-
 
 
 
@@ -189,7 +153,7 @@ function search(req, res) {
 
         const products = results.map(product => ({
             ...product,
-            image: req.imagePath + product.image
+            image_url: req.imagePath + product.image_url // Aggiunge il percorso immagine
         }));
 
         res.json(products);
