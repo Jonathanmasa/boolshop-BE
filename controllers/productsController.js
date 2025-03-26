@@ -46,7 +46,7 @@ function getByCategory(req, res) {
 
         const products = result.map(product => ({
             ...product,
-            image_url: req.imagePath + product.image_url // Aggiunge il percorso immagine
+            image: req.imagePath + product.image
         }));
 
         res.json(products);
@@ -75,7 +75,7 @@ function getOnSaleProducts(req, res) {
         const products = result.map(p => ({
             ...p,
             discounted_price: p.price - (p.price * p.amount / 100),
-            image_url: req.imagePath + product.image_url // Aggiunge il percorso immagine
+            image: req.imagePath + p.image
         }));
 
         res.json(products);
@@ -100,7 +100,7 @@ function getNewArrivals(req, res) {
 
         const products = result.map(p => ({
             ...p,
-            image_url: req.imagePath + product.image_url // Aggiunge il percorso immagine
+            image: req.imagePath + p.image
         }));
 
         res.json(products);
@@ -189,7 +189,7 @@ function search(req, res) {
 
         const products = results.map(product => ({
             ...product,
-            image_url: req.imagePath + product.image_url // Aggiunge il percorso immagine
+            image: req.imagePath + product.image
         }));
 
         res.json(products);
