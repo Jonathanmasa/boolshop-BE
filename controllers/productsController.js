@@ -47,7 +47,7 @@ function getByCategory(req, res) {
 
         const products = result.map(product => ({
             ...product,
-            image: req.imagePath + product.image
+            image_url: req.imagePath + p.image_url
         }));
 
         res.json(products);
@@ -76,7 +76,7 @@ function getOnSaleProducts(req, res) {
         const products = result.map(p => ({
             ...p,
             discounted_price: p.price - (p.price * p.amount / 100),
-            image: req.imagePath + p.image
+            image_url: req.imagePath + p.image_url
         }));
 
         res.json(products);
