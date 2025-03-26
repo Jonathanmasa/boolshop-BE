@@ -194,7 +194,7 @@ function show(req, res) {
             case 'card':
                 detailQuery = 'SELECT * FROM card_details WHERE product_id = ?';
                 break;
-            case 'figures':
+            case 'figure':
                 detailQuery = 'SELECT * FROM figure_details WHERE product_id = ?';
                 break;
             case 'manga':
