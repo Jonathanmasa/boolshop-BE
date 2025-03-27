@@ -166,7 +166,58 @@ function search(req, res) {
     });
 }
 
+function searchFiltred(req, res) {
+    // Log dei parametri della richiesta
+    console.log('Parametri della richiesta:', req.query);  // Questo mostrerà tutti i parametri ricevuti
 
+    const searchTerm = req.query.query || '';  // Ottieni il termine di ricerca
+    const searchType = req.query.type || '';
+    const sortOption = req.query.sort || 'name_asc';  // Imposta l'ordinamento di default
+
+    const likeTerm = `%${searchTerm}%`;
+
+    // Log per verificare il parametro di ordinamento
+    console.log('Parametro di ordinamento:', sortOption);  // Questo ti dirà quale valore è stato passato per il parametro "sort"
+
+    // Mappa le opzioni di ordinamento
+    const sortMap = {
+        'price_asc': 'price ASC',
+        'price_desc': 'price DESC',
+        'name_asc': 'name ASC',
+        'name_desc': 'name DESC',
+        'date_asc': 'release_date ASC',
+        'date_desc': 'release_date DESC'
+    };
+
+    // Ottieni l'ordinamento corretto
+    const orderBy = sortMap[sortOption] || 'name ASC';  // Se 'sort' non è valido, usa 'name_asc'
+
+    // Log della query con l'ordinamento applicato
+    console.log(`Esecuzione query con ordinamento: ${orderBy}`);  // Questo mostrerà l'ordinamento che verrà applicato
+
+    // Query SQL completa
+    const sql = `
+        SELECT * FROM products
+        WHERE (category = ? OR category IS NULL) 
+        AND (name LIKE ? OR category LIKE ? OR brand LIKE ?)
+        ORDER BY ${orderBy}
+    `;
+
+    connection.query(sql, [searchType, likeTerm, likeTerm, likeTerm], (err, results) => {
+        if (err) {
+            console.error('Errore durante la ricerca:', err);
+            return res.status(500).json({ error: 'Errore nella ricerca' });
+        }
+
+        const products = results.map(product => ({
+            ...product,
+            image_url: req.imagePath + product.image_url // Aggiunge il percorso immagine
+        }));
+
+        res.json(products);
+    });
+
+}
 
 
 
@@ -220,7 +271,7 @@ function show(req, res) {
 
 
 // esporta le funzioni 
-module.exports = { index, show, search, getByCategory, getOnSaleProducts, getNewArrivals };
+module.exports = { index, show, search, searchFiltred, getByCategory, getOnSaleProducts, getNewArrivals };
 
 
 
