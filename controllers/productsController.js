@@ -166,20 +166,14 @@ function search(req, res) {
     });
 }
 
+// ✅ Funzione corretta con logica AND combinata tra "query" e "type"
 function searchFiltred(req, res) {
-    // Log dei parametri della richiesta
-    console.log('Parametri della richiesta:', req.query);  // Questo mostrerà tutti i parametri ricevuti
+    console.log('Parametri della richiesta:', req.query);
 
-    const searchTerm = req.query.query || '';  // Ottieni il termine di ricerca
+    const searchTerm = req.query.query || '';
     const searchType = req.query.type || '';
-    const sortOption = req.query.sort || 'name_asc';  // Imposta l'ordinamento di default
+    const sortOption = req.query.sort || 'name_asc';
 
-    const likeTerm = `%${searchTerm}%`;
-
-    // Log per verificare il parametro di ordinamento
-    console.log('Parametro di ordinamento:', sortOption);  // Questo ti dirà quale valore è stato passato per il parametro "sort"
-
-    // Mappa le opzioni di ordinamento
     const sortMap = {
         'price_asc': 'price ASC',
         'price_desc': 'price DESC',
@@ -189,21 +183,28 @@ function searchFiltred(req, res) {
         'date_desc': 'release_date DESC'
     };
 
-    // Ottieni l'ordinamento corretto
-    const orderBy = sortMap[sortOption] || 'name ASC';  // Se 'sort' non è valido, usa 'name_asc'
+    const orderBy = sortMap[sortOption] || 'name ASC';
 
-    // Log della query con l'ordinamento applicato
-    console.log(`Esecuzione query con ordinamento: ${orderBy}`);  // Questo mostrerà l'ordinamento che verrà applicato
+    let sql = `SELECT * FROM products WHERE 1=1`;
+    const sqlParams = [];
 
-    // Query SQL completa
-    const sql = `
-        SELECT * FROM products
-        WHERE (category = ? OR category IS NULL) 
-        AND (name LIKE ? OR category LIKE ? OR brand LIKE ?)
-        ORDER BY ${orderBy}
-    `;
+    if (searchType) {
+        sql += ` AND category = ?`;
+        sqlParams.push(searchType);
+    }
 
-    connection.query(sql, [searchType, likeTerm, likeTerm, likeTerm], (err, results) => {
+    if (searchTerm) {
+        const likeTerm = `%${searchTerm}%`;
+        sql += ` AND (name LIKE ? OR brand LIKE ?)`;
+        sqlParams.push(likeTerm, likeTerm);
+    }
+
+    sql += ` ORDER BY ${orderBy}`;
+
+    console.log('Query finale:', sql);
+    console.log('Parametri:', sqlParams);
+
+    connection.query(sql, sqlParams, (err, results) => {
         if (err) {
             console.error('Errore durante la ricerca:', err);
             return res.status(500).json({ error: 'Errore nella ricerca' });
@@ -211,13 +212,13 @@ function searchFiltred(req, res) {
 
         const products = results.map(product => ({
             ...product,
-            image_url: req.imagePath + product.image_url // Aggiunge il percorso immagine
+            image_url: req.imagePath + product.image_url
         }));
 
         res.json(products);
     });
-
 }
+
 
 
 

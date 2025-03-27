@@ -35,7 +35,7 @@ router.get('/new-arrivals', productsController.getNewArrivals);
 // search products (mostra i prodotti dalla tabella products in base alla query di ricerca per nome, categoria, brand)
 router.get('/search', productsController.search);
 
-router.get('/search_filtred', productsController.searchFiltred);
+router.get('/searchFiltred', productsController.searchFiltred);
 
 
 // esportiamo il modulo del router
