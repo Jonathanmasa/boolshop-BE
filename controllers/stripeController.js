@@ -11,24 +11,46 @@ const { createOrderFromStripe } = require('./ordersController');
 
 //  1. Crea una sessione di checkout per iniziare il processo di pagamento con Stripe
 async function createCheckoutSession(req, res) {
-    // simula i dati che normalmente arriveranno dal FE
-    const user = {
-        name: "Luca",
-        surname: "Telese",
-        email: "ducciok@gmail.com",
-        address: "Via Roma 123",
-        phone: "1234567890",
-        postal_code: "90100",
-        city: "Palermo",
-        country: "Italia",
-        tax_id_code: "MRARSS80A01H501X"
-    };
 
-    // simula i prodotti nel carrello (prezzi in centesimi)
-    const items = [
-        { product_id: 7, quantity: 1, name: "Naruto Card Pack", price: 2000 },
-        { product_id: 5, quantity: 1, name: "Dragon Ball Set", price: 1500 }
-    ];
+    console.log("✅ Endpoint /create-checkout-session colpito!");
+    console.log("🧑‍💻 Body ricevuto:", req.body);
+
+
+
+    // // simula i dati che normalmente arriveranno dal FE
+    // const user = {
+    //     name: "Luca",
+    //     surname: "Telese",
+    //     email: "ducciok@gmail.com",
+    //     address: "Via Roma 123",
+    //     phone: "1234567890",
+    //     postal_code: "90100",
+    //     city: "Palermo",
+    //     country: "Italia",
+    //     tax_id_code: "MRARSS80A01H501X"
+    // };
+
+    // // simula i prodotti nel carrello (prezzi in centesimi)
+    // const items = [
+    //     { product_id: 7, quantity: 1, name: "Naruto Card Pack", price: 2000 },
+    //     { product_id: 5, quantity: 1, name: "Dragon Ball Set", price: 1500 }
+    // ];
+
+    // Estrai i dati dell'utente e gli articoli dal corpo della richiesta
+    const { user, cart } = req.body;
+
+    if (!user || !cart || !Array.isArray(cart) || cart.length === 0) {
+        return res.status(400).json({ error: "Dati mancanti o carrello vuoto." });
+    }
+
+    // Converti i prezzi in centesimi per Stripe
+    const items = cart.map(item => ({
+        product_id: item.id || item.product_id,
+        name: item.name,
+        quantity: item.quantity,
+        price: Math.round(item.price * 100)
+    }));
+
 
 
     // Calcola il subtotal degli articoli nel carrello

@@ -21,12 +21,16 @@ app.use(cors({ origin: process.env.FE_APP }));
 app.use(imagePath);
 app.use(express.static('public'));
 
-// Stripe
-app.use('/api/stripe', stripeRouter);
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), stripeRouter);
+
 
 // Parser normale
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Stripe
+app.use('/api/stripe', stripeRouter);
+
 
 // Altre rotte
 app.use('/api/products', productsRouter);
