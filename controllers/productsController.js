@@ -7,7 +7,12 @@ const connection = require('../data/db');// Importa la connessione al database
 // index (mostra tutti i prodotti dalla tabella products)
 function index(req, res) {
 
-    const sql = 'SELECT * FROM products';// Query per ottenere tutti i prodotti
+    // Query per ottenere tutti i prodotti con eventuale sconto
+    const sql = `
+    SELECT p.*, d.amount
+    FROM products p
+    LEFT JOIN discount d ON p.id = d.product_id
+  `;
 
 
     // lancia query al db per ottenere dati products
@@ -18,12 +23,13 @@ function index(req, res) {
         }
 
         // mappa i risultati e aggiungi il percorso dell'immagine
-        const products = result.map(product => {
-            return {
-                ...product,
-                image_url: req.imagePath + product.image_url // Aggiunge il percorso immagine
-            }
-        })
+        const products = result.map(product => ({
+            ...product,
+            discounted_price: product.amount
+                ? product.price - (product.price * product.amount / 100)
+                : null,
+            image_url: req.imagePath + product.image_url
+        }));
 
         // restituisci il product in formato json
         res.json(products);
@@ -42,7 +48,13 @@ function getByCategory(req, res) {
         return res.status(400).json({ error: 'Categoria non valida' });
     }
 
-    const sql = 'SELECT * FROM products WHERE category = ?';
+    // Query per ottenere i prodotti della categoria specifica con eventuale sconto
+    const sql = `
+    SELECT p.*, d.amount
+    FROM products p
+    LEFT JOIN discount d ON p.id = d.product_id
+    WHERE p.category = ?
+  `;
 
     connection.query(sql, [category], (err, result) => {
         if (err) {
@@ -52,8 +64,12 @@ function getByCategory(req, res) {
 
         const products = result.map(product => ({
             ...product,
+            discounted_price: product.amount
+                ? product.price - (product.price * product.amount / 100)
+                : null,
             image_url: req.imagePath + product.image_url
         }));
+
 
         res.json(products);
     });
@@ -130,26 +146,28 @@ function search(req, res) {
 
     // Mappa le opzioni di ordinamento
     const sortMap = {
-        'price_asc': 'price ASC',
-        'price_desc': 'price DESC',
-        'name_asc': 'name ASC',
-        'name_desc': 'name DESC',
-        'date_asc': 'release_date ASC',
-        'date_desc': 'release_date DESC'
+        'price_asc': 'p.price ASC',
+        'price_desc': 'p.price DESC',
+        'name_asc': 'p.name ASC',
+        'name_desc': 'p.name DESC',
+        'date_asc': 'p.release_date ASC',
+        'date_desc': 'p.release_date DESC'
     };
 
     // Ottieni l'ordinamento corretto
-    const orderBy = sortMap[sortOption] || 'name ASC';  // Se 'sort' non è valido, usa 'name_asc'
+    const orderBy = sortMap[sortOption] || 'p.name ASC';  // Se 'sort' non è valido, usa 'name_asc'
 
     // Log della query con l'ordinamento applicato
     console.log(`Esecuzione query con ordinamento: ${orderBy}`);  // Questo mostrerà l'ordinamento che verrà applicato
 
     // Query SQL completa
     const sql = `
-        SELECT * FROM products
-        WHERE name LIKE ? OR category LIKE ? OR brand LIKE ?
-        ORDER BY ${orderBy}
-    `;
+    SELECT p.*, d.amount
+    FROM products p
+    LEFT JOIN discount d ON p.id = d.product_id
+    WHERE p.name LIKE ? OR p.category LIKE ? OR p.brand LIKE ?
+    ORDER BY ${orderBy}
+`;
 
     connection.query(sql, [likeTerm, likeTerm, likeTerm], (err, results) => {
         if (err) {
@@ -159,6 +177,9 @@ function search(req, res) {
 
         const products = results.map(product => ({
             ...product,
+            discounted_price: product.amount
+                ? product.price - (product.price * product.amount / 100)
+                : null,
             image_url: req.imagePath + product.image_url // Aggiunge il percorso immagine
         }));
 
@@ -175,28 +196,32 @@ function searchFiltred(req, res) {
     const sortOption = req.query.sort || 'name_asc';
 
     const sortMap = {
-        'price_asc': 'price ASC',
-        'price_desc': 'price DESC',
-        'name_asc': 'name ASC',
-        'name_desc': 'name DESC',
-        'date_asc': 'release_date ASC',
-        'date_desc': 'release_date DESC'
+        'price_asc': 'p.price ASC',
+        'price_desc': 'p.price DESC',
+        'name_asc': 'p.name ASC',
+        'name_desc': 'p.name DESC',
+        'date_asc': 'p.release_date ASC',
+        'date_desc': 'p.release_date DESC'
     };
 
     const orderBy = sortMap[sortOption] || 'name ASC';
 
-    let sql = `SELECT * FROM products WHERE 1=1`;
+    let sql = `SELECT p.*, d.amount
+        FROM products p
+        LEFT JOIN discount d ON p.id = d.product_id
+        WHERE 1=1`;
+
     const sqlParams = [];
 
     if (searchType) {
-        sql += ` AND category = ?`;
+        sql += ` AND p.category = ?`;
         sqlParams.push(searchType);
     }
 
     if (searchTerm) {
         const likeTerm = `%${searchTerm}%`;
-        sql += ` AND (name LIKE ? OR brand LIKE ?)`;
-        sqlParams.push(likeTerm, likeTerm);
+        sql += ` AND (p.name LIKE ? OR p.brand LIKE ? OR p.category LIKE ?)`;
+        sqlParams.push(likeTerm, likeTerm, likeTerm);
     }
 
     sql += ` ORDER BY ${orderBy}`;
@@ -212,6 +237,9 @@ function searchFiltred(req, res) {
 
         const products = results.map(product => ({
             ...product,
+            discounted_price: product.amount
+                ? product.price - (product.price * product.amount / 100)
+                : null,
             image_url: req.imagePath + product.image_url
         }));
 
@@ -226,7 +254,13 @@ function searchFiltred(req, res) {
 function show(req, res) {
     const { id, category } = req.params;// Estrae id e categoria dai parametri della richiesta
 
-    const productQuery = 'SELECT * FROM products WHERE id = ?';// Query per ottenere il prodotto
+    // Query per ottenere il prodotto specifico con eventuale sconto
+    const productQuery = `
+    SELECT p.*, d.amount
+    FROM products p
+    LEFT JOIN discount d ON p.id = d.product_id
+    WHERE p.id = ?
+  `;
 
     // lancia query al db per ottenere dati products
     connection.query(productQuery, [id], (err, productResult) => {
