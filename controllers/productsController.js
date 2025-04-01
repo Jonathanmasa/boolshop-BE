@@ -297,6 +297,10 @@ function show(req, res) {
 
             // Aggiungi i dettagli come oggetto "details"
             product.details = detailResult[0] || {};
+
+            product.discounted_price = product.amount
+                ? product.price - (product.price * product.amount / 100)
+                : null;
             product.image_url = req.imagePath + product.image_url; // Aggiunge il percorso immagine
             // Restituisce il prodotto con i dettagli
             res.json(product);
